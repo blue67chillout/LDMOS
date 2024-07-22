@@ -1,0 +1,103 @@
+(sde:clear)
+
+; set coordinate system up direction
+(sde:set-process-up-direction "+z")
+
+(sdegeo:set-auto-region-naming OFF)
+
+(sdegeo:set-default-boolean"ABA")
+
+
+(sdegeo:create-rectangle (position 0.0  0.0   0.0) (position 10.0 3.0 0.0) "Silicon" "activeregion")
+
+
+(sdegeo:create-rectangle (position 0.646  0.0   0.0) (position 1.646  -0.05  0.0) "Oxide" "gateoxide")
+
+
+(sdegeo:create-rectangle (position 0.65  -0.01   0.0) (position 1.642  -0.05  0.0) "PolySilicon" "gatepoly")
+
+(sdegeo:create-polygon(list (position 0.05  0.0   0.0) (position 0.15  0.0  0.0) (position 0.125  0.2  0.0) (position 0.075  0.2  0.0)) "Oxide" "STI_source")
+
+(sdegeo:insert-vertex (position 9.6 0.0 0.0))
+
+(sdegeo:insert-vertex (position 0.55 0.0 0.0))
+
+(sdegeo:define-contact-set "gate" 4  (color:rgb 1 0 0 ) "##")
+(sdegeo:define-contact-set "source" 4  (color:rgb 0 1 0 ) "##")
+(sdegeo:define-contact-set "drain" 4  (color:rgb 0 0 1 ) "##")
+(sdegeo:define-contact-set "bulk" 4  (color:rgb 1 1 0 ) "##")
+
+
+(sdegeo:set-current-contact-set "gate")
+(sdegeo:set-contact (list (car (find-edge-id (position 1.0 -0.05 0)))) "gate")
+(render:rebuild)  
+(sdegeo:set-current-contact-set "source")
+(sdegeo:set-contact (list (car (find-edge-id (position 0.3 0.0 0)))) "source")
+(render:rebuild)  
+(sdegeo:set-current-contact-set "drain")
+(sdegeo:set-contact (list (car (find-edge-id (position 9.8 0.0 0)))) "drain")
+(render:rebuild)  
+(sdegeo:set-current-contact-set "bulk")
+(sdegeo:set-contact (list (car (find-edge-id (position 0.025 0.0 0)))) "bulk")
+(render:rebuild)  
+ 
+
+
+(sdedr:define-refeval-window "p+_bulk" "Line"  (position 0.0 0 0) (position 0.025 0 0))
+(sdedr:define-refeval-window "n+_source" "Line"  (position 0.125 0 0) (position 0.62 0 0))
+(sdedr:define-refeval-window "n+_drain" "Line"  (position 9.5 0 0) (position 10.0 0 0))
+
+(sdedr:define-refeval-window "RefEval-pwell" "Rectangle" (position 0.0  0.0   0.0) (position 1.145 1.0 0.0))
+(sdedr:define-constant-profile "ConstProfDef-pwell" "BoronActiveConcentration" @Nch@)
+(sdedr:define-constant-profile-placement "ConstProfPlace-pwell" "ConstProfDef-pwell" "RefEval-pwell")
+
+(sdedr:define-refeval-window "RefEval-nwell" "Rectangle" (position 1.145  0.0   0.0) (position 10.0 1.0 0.0))
+(sdedr:define-constant-profile "ConstProfDef-nwell" "ArsenicActiveConcentration" @Nnw@)
+(sdedr:define-constant-profile-placement "ConstProfPlace-nwell" "ConstProfDef-nwell" "RefEval-nwell")
+
+
+(sdedr:define-refeval-window "RefEval-p_sub" "Rectangle" (position 0.0  1.0   0.0) (position 10 3.0 0.0))
+(sdedr:define-constant-profile "ConstProfDef-p_sub" "BoronActiveConcentration" @Nsub@)
+(sdedr:define-constant-profile-placement "ConstProfPlace-p_sub" "ConstProfDef-p_sub" "RefEval-p_sub")
+
+
+(sdedr:define-refeval-window "NL1win" "Rectangle" (position 1.8  0.2   0.0) (position 9.2 0.4 0.0))
+(sdedr:define-constant-profile "ConstProfDef-p_b" "BoronActiveConcentration" @Npb@)
+(sdedr:define-constant-profile-placement "ConstProfPlace-p_b" "ConstProfDef-p_b" "RefEval-p_b")
+
+(sdedr:define-refeval-window "NL2win" "Rectangle" (position 1.8  0.6   0.0) (position 9.2 0.8 0.0))
+(sdedr:define-constant-profile "ConstProfDef-p_b" "BoronActiveConcentration" @Npb@)
+(sdedr:define-constant-profile-placement "ConstProfPlace-p_b" "ConstProfDef-p_b" "RefEval-p_b")
+
+(sdedr:define-constant-profile "n_poly" "ArsenicActiveConcentration" 1e+20)
+(sdedr:define-constant-profile-region "place_gatepoly" "n_poly" "gatepoly")
+
+(sdedr:define-analytical-profile-placement "PlaceAP.bulk" "gauss.bulk" "p+_bulk" "Both" "NoReplace" "Eval")
+(sdedr:define-gaussian-profile "gauss.bulk" "BoronActiveConcentration" "PeakPos" 0  "PeakVal" 1e+20 "ValueAtDepth" @Nch@ "Depth" 0.25 "Gauss"  "Factor" 0.75)
+
+(sdedr:define-analytical-profile-placement "PlaceAP.source" "gauss.source" "n+_source" "Both" "NoReplace" "Eval")
+(sdedr:define-gaussian-profile "gauss.source" "ArsenicActiveConcentration" "PeakPos" 0  "PeakVal" 1e+20 "ValueAtDepth" 2e17 "Depth" 0.25 "Gauss"  "Factor" 0.75)
+(sdedr:define-analytical-profile-placement "PlaceAP.drain" "gauss.drain" "n+_drain" "Both" "NoReplace" "Eval")
+(sdedr:define-gaussian-profile "gauss.drain" "ArsenicActiveConcentration" "PeakPos" 0  "PeakVal" 1e+20 "ValueAtDepth" @Nnw@ "Depth" 0.25 "Gauss"  "Factor" 0.75)
+
+
+(sdedr:define-refeval-window "RefEvalWin_all" "Rectangle"  (position 0 -0.11 0) (position 10.0 3.0 0))
+(sdedr:define-refinement-size "RefinementDefinition_all" 0.2 0.2 0.01 0.01 )
+(sdedr:define-refinement-placement "RefinementPlacement_all" "RefinementDefinition_all" (list "window" "RefEvalWin_all" ) )
+(sdedr:define-refinement-function "RefinementDefinition_all" "DopingConcentration" "MaxTransDiff" 2)
+
+
+(sdedr:define-refeval-window "RefEvalWin_channel" "Rectangle"  (position 0 0 0) (position 10.0 0.25 0))
+(sdedr:define-refinement-size "RefinementDefinition_channel" 0.01 0.01 0.001 0.001 )
+(sdedr:define-refinement-placement "RefinementPlacement_channel" "RefinementDefinition_channel" (list "window" "RefEvalWin_channel" ) )
+(sdedr:define-refinement-function "RefinementDefinition_channel" "DopingConcentration" "MaxTransDiff" 2)
+
+(sdedr:define-refeval-window "RefEvalWin_channel" "Rectangle"  (position 0 0 0) (position 1.0 0.01 0))
+(sdedr:define-refinement-size "RefinementDefinition_channel_thin" 0.0001 0.0001 0.0001 0.0001 )
+(sdedr:define-refinement-placement "RefinementPlacement_channel_thin" "RefinementDefinition_channel_thin" (list "window" "RefEvalWin_channel_thin" ) )
+(sdedr:define-refinement-function "RefinementDefinition_channel_thin" "DopingConcentration" "MaxTransDiff" 2)
+
+;---------------------------------------------------------
+; Build Mesh
+;---------------------------------------------------------------------------------------------
+(sde:build-mesh "snmesh" "" "n@node@")
