@@ -1,0 +1,106 @@
+Electrode {
+   { name= "drain" Voltage= 0.0}
+   { name= "gate" Voltage= 0.0}
+   { name= "source" Voltage= 0.0}
+   { name= "bulk" Voltage= 0.0}
+   
+}
+
+
+File {
+* input files:
+Grid= "@tdr@"
+Parameter= "@parameter@"
+
+* output files:
+Plot= "@tdrdat@"
+Current= "@plot@"
+Output= "@log@"
+}
+
+Physics (Material="Silicon") {
+    EffectiveIntrinsicDensity( OldSlotboom )    
+    Mobility(
+       DopingDependence
+       HighFieldSaturation
+       Enormal
+    )
+    Recombination(
+       SRH(DopingDependence TempDependence)
+       Auger
+       Avalanche(UniBo2)
+    )
+}
+
+Plot {
+Doping
+eCurrent/Vector hCurrent/Vector TotalCurrent
+eDensity hDensity
+ElectricField/Vector
+SpaceCharge DonorConcentration AcceptorConcentration
+emobility hmobility
+SRH Auger Avalanche
+eAvalanche hAvalanche
+eVelocity hVelocity
+}
+
+Math {
+   Extrapolate
+   RelErrControl
+   Digits= 5
+   Iterations= 20
+   NotDamped= 50
+   Number_Of_Threads= 8
+   eDrForceRefDens= 1e12
+   hDrForceRefDens= 1e12
+
+   Method= ILS(set= 21)
+   ILSrc= "
+   set(21) {
+   iterative (gmres(150), tolrel=1e-11, maxit=250);
+   preconditioning ( ilut( 2e-5,-1), left);
+   ordering (symmetric=nd, nonsymmetric=mpsilst);
+   options (compact=yes, refineresidual=30 );
+   };
+   "
+   
+}
+
+Solve {
+*- Creating initial guess:
+   Coupled(Iterations=100 LineSearchDamping=1e-4){ Poisson }
+   Coupled { Poisson Electron Hole}
+
+*- Ramp to gate to Vg
+   Quasistationary(
+      InitialStep= 1e-2 Increment= 1.45
+      MinStep= 1e-5 MaxStep= 0.01
+      Goal { Name= "gate" Voltage= @Vg@ }
+   ){ Coupled { Poisson Electron Hole}
+Plot(FilePrefix="n@node@_Vgs1" Time=(1))
+ }
+
+*- Vd sweep
+   NewCurrentFile="IdVd_"
+   Quasistationary (
+      DoZero
+      Initialstep= 0.001 Increment= 1.0
+      Minstep= 1e-5 MaxStep= 0.01
+      Goal { name= "drain" voltage= @Vd@ }
+    ){ Coupled { Poisson Electron Hole}
+Plot(FilePrefix="n@node@_V0" Time=(0))
+Plot(FilePrefix="n@node@_Vd25" Time=(0.005))
+                    Plot(FilePrefix="n@node@_Vd50" Time=(0.01))
+   Plot(FilePrefix="n@node@_Vd75" Time=(0.015))
+   Plot(FilePrefix="n@node@_Vd100" Time=(0.02))
+   Plot(FilePrefix="n@node@_Vd125" Time=(0.025))
+                    Plot(FilePrefix="n@node@_Vd150" Time=(0.03))
+   Plot(FilePrefix="n@node@_Vd175" Time=(0.035))
+   Plot(FilePrefix="n@node@_Vd200" Time=(0.04))
+   Plot(FilePrefix="n@node@_Vd1" Time=(0.2))
+                    Plot(FilePrefix="n@node@_Vd2" Time=(0.4))
+   Plot(FilePrefix="n@node@_Vd3" Time=(0.6))
+   Plot(FilePrefix="n@node@_Vd4" Time=(0.8))
+   Plot(FilePrefix="n@node@_Vd5" Time=(1))
+    }
+}
