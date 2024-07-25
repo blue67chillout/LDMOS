@@ -1,1 +1,15 @@
+Result 1 was obtained from the following concentrations:
+Nsub-1e18, Nnw-2e16, Nch-4e17.
 
+Result 2 was obtained from the following concentrations:
+Nsub-1e18 Nnw-1e16 Nch-4e17.
+
+Result 3 was obtained from the following concentrations:
+Nsub-1e18 Nnw-1e16 Nch-8e16.
+
+Result 4 was obtained from the following concentrations:
+Nsub-1e18 Nnw-1e16 Nch-1e17.
+
+where 'Nsub' is the doping concentration of substrate, 'Nnw' is the doping concentration of drift region, 'Nch' is the doping concentration of channel formed.
+
+From this results we can interpret that for a specific doping concentration of all the three are the deciding factor for the higher breakdown region, currently we achieved a breakdown voltage of 200V which can be observed from Result 4.
