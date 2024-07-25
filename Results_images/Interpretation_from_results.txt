@@ -1,9 +1,6 @@
 Result 1 was obtained from the following concentrations:
 Nsub-1e18, Nnw-2e16, Nch-4e17.
 
-Result 2 was obtained from the following concentrations:
-Nsub-1e18 Nnw-1e16 Nch-4e17.
-
 Result 3 was obtained from the following concentrations:
 Nsub-1e18 Nnw-1e16 Nch-8e16.
 
